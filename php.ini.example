@@ -1,0 +1,6 @@
+; Copia este fragmento a tu php.ini o créalo como php.ini en la raíz del proyecto
+; y ejecuta: php -c php.ini artisan serve
+;
+; Necesario para subir APKs (Guardiana ~10 MB, Reproductora puede ser mayor)
+upload_max_filesize = 64M
+post_max_size = 64M

@@ -1,0 +1,25 @@
+BINARIOS ADB PARA EL GENERADOR DE SCRIPTS ZIP
+==============================================
+
+Descarga los Platform Tools oficiales de Google:
+  https://developer.android.com/tools/releases/platform-tools
+
+Luego coloca los archivos como se indica:
+
+─── CARPETA: windows/ ────────────────────────────────
+  adb.exe
+  AdbWinApi.dll
+  AdbWinUsbApi.dll
+
+  Fuente: descomprime platform-tools-latest-windows.zip
+          y copia esos 3 archivos.
+
+─── CARPETA: mac/ ────────────────────────────────────
+  adb   (binario sin extensión, ejecutable)
+
+  Fuente: descomprime platform-tools-latest-mac.zip
+          y copia solo el archivo "adb".
+
+NOTA: Sin estos archivos el panel generará el ZIP igualmente,
+pero sin los binarios de ADB incluidos. El operador deberá
+tener ADB instalado en su computadora de forma separada.

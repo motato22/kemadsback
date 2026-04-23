@@ -1,0 +1,111 @@
+version: '3.9'
+
+# ─── Stack de desarrollo local para KEM Advertising ─────────────────────────
+# Servicios: MySQL 8, Redis 7, MinIO (emula R2/S3), MailHog
+# Uso: docker compose up -d
+# Panel MinIO: http://localhost:9001  (user: minio / pass: minio123)
+# MailHog:     http://localhost:8025
+
+services:
+
+  # ─── MySQL 8 ───────────────────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: kem_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_secret
+      MYSQL_DATABASE: kem_advertising
+      MYSQL_USER: kem_user
+      MYSQL_PASSWORD: kem_secret
+    ports:
+      - "3307:3306"
+    volumes:
+      - kem_mysql_data:/var/lib/mysql
+      - ./docker/mysql/conf.d:/etc/mysql/conf.d
+    networks:
+      - kem_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "kem_user", "-pkem_secret"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Redis 7 ───────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: kem_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - kem_redis_data:/data
+    networks:
+      - kem_network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── MinIO (emula Cloudflare R2 / S3-compatible) ───────────────────────────
+  minio:
+    image: minio/minio:latest
+    container_name: kem_minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+    ports:
+      - "9000:9000"   # API S3
+      - "9001:9001"   # Consola web
+    volumes:
+      - kem_minio_data:/data
+    networks:
+      - kem_network
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── MinIO: crea el bucket automáticamente al iniciar ─────────────────────
+  minio_init:
+    image: minio/mc:latest
+    container_name: kem_minio_init
+    depends_on:
+      minio:
+        condition: service_healthy
+    networks:
+      - kem_network
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 minio minio123;
+      mc mb --ignore-existing local/kem-advertising-local;
+      mc anonymous set download local/kem-advertising-local;
+      echo 'Bucket kem-advertising-local listo.';
+      "
+
+  # ─── MailHog (captura emails en desarrollo) ────────────────────────────────
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: kem_mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # UI web
+    networks:
+      - kem_network
+
+# ─── Volúmenes persistentes ───────────────────────────────────────────────────
+volumes:
+  kem_mysql_data:
+  kem_redis_data:
+  kem_minio_data:
+
+# ─── Red interna ─────────────────────────────────────────────────────────────
+networks:
+  kem_network:
+    driver: bridge

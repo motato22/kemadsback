@@ -1,0 +1,10 @@
+{
+    "version": "2",
+    "sha256_hex": "4754c450e8db524792fec567f4318db1d2a37a065b1480d4ca985876c265d75a",
+    "url": "http:\/\/localhost:8000\/api\/adv\/apk\/guardian",
+    "updated_at": "2026-03-31 00:22:01",
+    "wifi_ssid": "MyCuteCase",
+    "wifi_password": "Fundamarco",
+    "wifi_security": "WPA",
+    "cert_checksum_b64": "NZxuParBhPIa8Hro8FgwdGMD9fl4FKCrxkvuNa0sd2A"
+}

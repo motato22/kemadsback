@@ -1,0 +1,76 @@
+╔══════════════════════════════════════════════════════════════╗
+║        INSTALADOR DE TABLETS — KEMADVERTISING                ║
+║              Guía rápida para el operador                    ║
+╚══════════════════════════════════════════════════════════════╝
+
+ANTES DE EMPEZAR
+────────────────
+  • Las tablets y la laptop deben estar en el mismo Wi-Fi.
+  • Cada tablet debe tener habilitada la depuración inalámbrica
+    (Ajustes › Opciones de desarrollador › Depuración inalámbrica).
+  • Anota la IP de cada tablet (se muestra en la pantalla de
+    depuración inalámbrica de cada unidad).
+
+
+PASOS PARA INSTALAR
+────────────────────
+
+  1. EXTRAER
+     Descomprime este ZIP en una carpeta nueva en tu escritorio.
+     NO lo ejecutes directamente desde el ZIP.
+
+  2. EJECUTAR EL SCRIPT
+
+     ┌─ En WINDOWS ─────────────────────────────────────────┐
+     │  Haz doble clic en:  instalar_unidades.bat            │
+     │  Si Windows muestra una advertencia de seguridad,     │
+     │  haz clic en "Más información" › "Ejecutar de todas   │
+     │  formas".                                             │
+     └───────────────────────────────────────────────────────┘
+
+     ┌─ En MAC / LINUX ──────────────────────────────────────┐
+     │  Abre la Terminal, escribe:  sh                        │
+     │  (con un espacio al final) y arrastra el archivo       │
+     │  instalar_unidades.sh a la ventana de Terminal.        │
+     │  Luego presiona Enter.                                 │
+     └───────────────────────────────────────────────────────┘
+
+  3. INGRESAR IPs
+     El script te pedirá la IP de cada tablet, una por una.
+     Escribe la IP y presiona Enter.
+     Ejemplo:  192.168.1.87
+
+  4. ESPERAR
+     El script instala la app automáticamente en cada unidad.
+     Al terminar verás: "LOTE COMPLETADO".
+
+  5. VERIFICAR
+     En la pantalla de cada tablet debe aparecer la interfaz
+     de la App Guardiana iniciando.
+
+
+PROBLEMAS FRECUENTES
+─────────────────────
+
+  ✗ "adb: command not found"
+    → En Mac/Linux: asegúrate de ejecutar el script desde la
+      misma carpeta donde está el archivo "adb".
+    → En Windows: el archivo adb.exe debe estar en la misma
+      carpeta que el .bat.
+
+  ✗ "failed to connect to 192.168.x.x:41475"
+    → Verifica que la tablet tenga la depuración inalámbrica
+      activa y que la IP sea correcta.
+
+  ✗ "Not a valid APK"
+    → El APK de la Guardiana no está disponible en el servidor.
+      Contacta al administrador del sistema.
+
+  ✗ La ventana negra se cierra sola (Windows)
+    → Normal al terminar. Eso significa que el proceso fue
+      exitoso.
+
+
+¿ALGO MÁS?
+───────────
+  Contacta al equipo técnico de KEMADVERTISING.
