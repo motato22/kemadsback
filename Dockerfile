@@ -10,7 +10,6 @@ WORKDIR /var/www/html
 COPY --chown=www-data:www-data . .
 
 RUN composer install \
-    --no-dev \
     --no-interaction \
     --no-progress \
     --prefer-dist \

@@ -62,7 +62,7 @@ git fetch origin "$DEPLOY_BRANCH"
 git checkout "$DEPLOY_BRANCH"
 git reset --hard "origin/$DEPLOY_BRANCH"
 
-docker compose -f "$COMPOSE_FILE" build --no-cache --pull app
+docker compose -f "$COMPOSE_FILE" build --pull app
 docker compose -f "$COMPOSE_FILE" up -d --remove-orphans app
 
 docker compose -f "$COMPOSE_FILE" exec -T app php artisan package:discover --ansi
