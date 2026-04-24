@@ -39,6 +39,7 @@ class AdvertisingPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
+            ->default()
             ->id('advertising')
             ->path('adv-panel')
             ->login()
