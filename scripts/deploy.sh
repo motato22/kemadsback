@@ -67,11 +67,37 @@ docker compose -f "$COMPOSE_FILE" up -d --remove-orphans app
 
 app_container_id="$(docker compose -f "$COMPOSE_FILE" ps -q app)"
 
-if [[ -z "$app_container_id" || "$(docker inspect -f '{{.State.Running}}' "$app_container_id")" != "true" ]]; then
-    docker compose -f "$COMPOSE_FILE" logs --tail=100 app >&2
-    echo "The app container is not running." >&2
+if [[ -z "$app_container_id" ]]; then
+    echo "The app container did not start." >&2
     exit 1
 fi
+
+# Esperar hasta 90s a que el contenedor esté healthy (las migraciones corren al arrancar)
+echo "⏳ Waiting for container to become healthy..."
+deadline=$(( $(date +%s) + 90 ))
+while true; do
+    health="$(docker inspect -f '{{.State.Health.Status}}' "$app_container_id" 2>/dev/null || echo 'none')"
+    running="$(docker inspect -f '{{.State.Running}}' "$app_container_id" 2>/dev/null || echo 'false')"
+
+    if [[ "$running" != "true" ]]; then
+        echo "❌ Container stopped unexpectedly. Logs:" >&2
+        docker compose -f "$COMPOSE_FILE" logs --tail=150 app >&2
+        exit 1
+    fi
+
+    if [[ "$health" == "healthy" || "$health" == "none" ]]; then
+        echo "✅ Container is running (health: $health)"
+        break
+    fi
+
+    if [[ $(date +%s) -ge $deadline ]]; then
+        echo "❌ Container did not become healthy within 90s (status: $health). Logs:" >&2
+        docker compose -f "$COMPOSE_FILE" logs --tail=150 app >&2
+        exit 1
+    fi
+
+    sleep 5
+done
 
 docker compose -f "$COMPOSE_FILE" ps
 REMOTE_SCRIPT
