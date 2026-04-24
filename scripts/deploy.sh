@@ -73,17 +73,5 @@ if [[ -z "$app_container_id" || "$(docker inspect -f '{{.State.Running}}' "$app_
     exit 1
 fi
 
-artisan() {
-    docker compose -f "$COMPOSE_FILE" exec -T app php artisan "$@"
-}
-
-artisan package:discover --ansi
-artisan storage:link
-artisan optimize:clear
-artisan migrate --force
-artisan config:cache
-artisan route:cache
-artisan view:cache
-
 docker compose -f "$COMPOSE_FILE" ps
 REMOTE_SCRIPT

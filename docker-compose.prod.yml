@@ -13,7 +13,7 @@ services:
       CADDY_HTTP_PORT: "8080"
       PHP_OPCACHE_ENABLE: "1"
       PHP_MEMORY_LIMIT: "512M"
-      AUTORUN_ENABLED: "false"
+      AUTORUN_ENABLED: "true"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
