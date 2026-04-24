@@ -2,7 +2,10 @@ FROM serversideup/php:8.4-frankenphp
 
 USER root
 
-RUN install-php-extensions intl gd bcmath pcntl
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends default-mysql-client && \
+    rm -rf /var/lib/apt/lists/* && \
+    install-php-extensions intl gd bcmath pcntl
 
 USER www-data
 WORKDIR /var/www/html
