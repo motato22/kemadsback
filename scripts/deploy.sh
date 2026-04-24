@@ -65,13 +65,25 @@ git reset --hard "origin/$DEPLOY_BRANCH"
 docker compose -f "$COMPOSE_FILE" build --pull app
 docker compose -f "$COMPOSE_FILE" up -d --remove-orphans app
 
-docker compose -f "$COMPOSE_FILE" exec -T app php artisan package:discover --ansi
-docker compose -f "$COMPOSE_FILE" exec -T app php artisan storage:link
-docker compose -f "$COMPOSE_FILE" exec -T app php artisan optimize:clear
-docker compose -f "$COMPOSE_FILE" exec -T app php artisan migrate --force
-docker compose -f "$COMPOSE_FILE" exec -T app php artisan config:cache
-docker compose -f "$COMPOSE_FILE" exec -T app php artisan route:cache
-docker compose -f "$COMPOSE_FILE" exec -T app php artisan view:cache
+app_container_id="$(docker compose -f "$COMPOSE_FILE" ps -q app)"
+
+if [[ -z "$app_container_id" || "$(docker inspect -f '{{.State.Running}}' "$app_container_id")" != "true" ]]; then
+    docker compose -f "$COMPOSE_FILE" logs --tail=100 app >&2
+    echo "The app container is not running." >&2
+    exit 1
+fi
+
+artisan() {
+    docker compose -f "$COMPOSE_FILE" exec -T app php artisan "$@"
+}
+
+artisan package:discover --ansi
+artisan storage:link
+artisan optimize:clear
+artisan migrate --force
+artisan config:cache
+artisan route:cache
+artisan view:cache
 
 docker compose -f "$COMPOSE_FILE" ps
 REMOTE_SCRIPT
