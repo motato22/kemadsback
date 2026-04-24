@@ -9,17 +9,23 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // 1. Soltar la FK si existe (compatible con todas las versiones de Laravel)
-        $fkExists = DB::select("
-            SELECT 1 FROM information_schema.TABLE_CONSTRAINTS
+        // 1. Soltar todas las FKs que puedan existir (necesario antes de eliminar índices)
+        $existingFks = array_column(DB::select("
+            SELECT CONSTRAINT_NAME FROM information_schema.TABLE_CONSTRAINTS
             WHERE CONSTRAINT_SCHEMA = DATABASE()
               AND TABLE_NAME = 'adv_playback_logs'
-              AND CONSTRAINT_NAME = 'adv_playback_logs_tablet_id_foreign'
               AND CONSTRAINT_TYPE = 'FOREIGN KEY'
-        ");
-        if ($fkExists) {
-            Schema::table('adv_playback_logs', function (Blueprint $table) {
-                $table->dropForeign('adv_playback_logs_tablet_id_foreign');
+        "), 'CONSTRAINT_NAME');
+
+        $fksToDrop = array_intersect($existingFks, [
+            'adv_playback_logs_tablet_id_foreign',
+            'adv_playback_logs_media_id_foreign',
+            'adv_playback_logs_driver_shift_id_foreign',
+        ]);
+
+        foreach ($fksToDrop as $fk) {
+            Schema::table('adv_playback_logs', function (Blueprint $table) use ($fk) {
+                $table->dropForeign($fk);
             });
         }
 
