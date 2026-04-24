@@ -10,17 +10,17 @@ services:
       - /var/www/kemads.bridgestudio.host/shared/.env
     environment:
       SSL_MODE: "off"
-      CADDY_HTTP_PORT: "8080"
+      CADDY_HTTP_PORT: "8888"
       PHP_OPCACHE_ENABLE: "1"
       PHP_MEMORY_LIMIT: "512M"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
-      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:8888:8888"
     volumes:
       - kemads_storage:/var/www/html/storage
     healthcheck:
-      test: ["CMD-SHELL", "php -r '$$socket = @fsockopen(\"127.0.0.1\", 8080); exit($$socket ? 0 : 1);'"]
+      test: ["CMD-SHELL", "php -r '$$socket = @fsockopen(\"127.0.0.1\", 8888); exit($$socket ? 0 : 1);'"]
       interval: 30s
       timeout: 5s
       retries: 3
