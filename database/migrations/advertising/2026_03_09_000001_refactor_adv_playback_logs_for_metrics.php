@@ -10,28 +10,50 @@ return new class extends Migration
     {
         // 1. Soltar la FK primero (MySQL no permite eliminar índices usados por FKs)
         Schema::table('adv_playback_logs', function (Blueprint $table) {
-            $table->dropForeign('adv_playback_logs_tablet_id_foreign');
+            $table->dropForeignIfExists('adv_playback_logs_tablet_id_foreign');
         });
 
-        // 2. Ahora sí podemos eliminar los índices
+        // 2. Ahora sí podemos eliminar los índices (con guards por si ya fueron eliminados)
         Schema::table('adv_playback_logs', function (Blueprint $table) {
-            $table->dropIndex('adv_playback_logs_tablet_id_played_at_index');
-            $table->dropIndex('adv_playback_logs_media_id_played_at_index');
-            $table->dropIndex('adv_playback_logs_driver_shift_id_index');
+            foreach ([
+                'adv_playback_logs_tablet_id_played_at_index',
+                'adv_playback_logs_media_id_played_at_index',
+                'adv_playback_logs_driver_shift_id_index',
+            ] as $index) {
+                if (Schema::hasIndex('adv_playback_logs', $index)) {
+                    $table->dropIndex($index);
+                }
+            }
         });
 
-        // 3. Eliminar columnas del esquema anterior
-        Schema::table('adv_playback_logs', function (Blueprint $table) {
-            $table->dropColumn(['media_id', 'driver_shift_id', 'played_at', 'completed']);
-        });
+        // 3. Eliminar columnas del esquema anterior (solo las que aún existen)
+        $columnsToDrop = array_filter(
+            ['media_id', 'driver_shift_id', 'played_at', 'completed'],
+            fn ($col) => Schema::hasColumn('adv_playback_logs', $col)
+        );
+        if (! empty($columnsToDrop)) {
+            Schema::table('adv_playback_logs', function (Blueprint $table) use ($columnsToDrop) {
+                $table->dropColumn(array_values($columnsToDrop));
+            });
+        }
 
-        // 4. Agregar nuevas columnas y FK del esquema de métricas
+        // 4. Agregar nuevas columnas y FK del esquema de métricas (solo si aún no existen)
         Schema::table('adv_playback_logs', function (Blueprint $table) {
-            $table->foreignId('campaign_id')->after('tablet_id')->constrained('adv_campaigns')->cascadeOnDelete();
-            $table->timestamp('started_at')->after('campaign_id');
-            $table->timestamp('ended_at')->nullable()->after('started_at');
-            $table->unsignedInteger('duration_seconds')->default(0)->after('ended_at');
-            $table->index(['campaign_id', 'started_at']);
+            if (! Schema::hasColumn('adv_playback_logs', 'campaign_id')) {
+                $table->foreignId('campaign_id')->after('tablet_id')->constrained('adv_campaigns')->cascadeOnDelete();
+            }
+            if (! Schema::hasColumn('adv_playback_logs', 'started_at')) {
+                $table->timestamp('started_at')->after('campaign_id');
+            }
+            if (! Schema::hasColumn('adv_playback_logs', 'ended_at')) {
+                $table->timestamp('ended_at')->nullable()->after('started_at');
+            }
+            if (! Schema::hasColumn('adv_playback_logs', 'duration_seconds')) {
+                $table->unsignedInteger('duration_seconds')->default(0)->after('ended_at');
+            }
+            if (! Schema::hasIndex('adv_playback_logs', 'adv_playback_logs_campaign_id_started_at_index')) {
+                $table->index(['campaign_id', 'started_at']);
+            }
         });
     }
 
