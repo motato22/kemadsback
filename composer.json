@@ -6,7 +6,6 @@
     "require": {
         "php": "^8.2",
         "bezhansalleh/filament-shield": "^3.9",
-        "deployer/deployer": "^7.5",
         "filament/filament": "^3.0",
         "laravel/framework": "^11.0",
         "laravel/horizon": "^5.0",

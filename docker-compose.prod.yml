@@ -1,0 +1,30 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: kemads-app:php-8.4-frankenphp
+    container_name: kemads_app
+    restart: unless-stopped
+    env_file:
+      - /var/www/kemads.bridgestudio.host/shared/.env
+    environment:
+      SSL_MODE: "off"
+      CADDY_HTTP_PORT: "8080"
+      PHP_OPCACHE_ENABLE: "1"
+      PHP_MEMORY_LIMIT: "512M"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - kemads_storage:/var/www/html/storage
+    healthcheck:
+      test: ["CMD-SHELL", "php -r '$$socket = @fsockopen(\"127.0.0.1\", 8080); exit($$socket ? 0 : 1);'"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  kemads_storage:

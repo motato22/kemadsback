@@ -16,28 +16,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Get Composer Cache Directory
-        id: composer-cache
+      - name: Configure SSH key
         run: |
-          echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-
-      - uses: actions/cache@v4
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-composer-
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.4"
-
-      - name: Install dependencies
-        run: composer install
+          printf '%s\n' "${{secrets.PRIVATE_KEY_STAGING}}" > deploy_key
+          chmod 600 deploy_key
 
       - name: Deploy
-        uses: deployphp/action@v1
-        with:
-          private-key: ${{ secrets.PRIVATE_KEY_STAGING }}
-          dep: deploy --branch=main staging
+        env:
+          SSH_KEY_PATH: deploy_key
+          STAGING_HOST: kemads.bridgestudio.host
+          STAGING_USER: root
+          DEPLOY_PATH: /var/www/kemads.bridgestudio.host/current
+          DEPLOY_BRANCH: main
+        run: ./scripts/deploy.sh

@@ -235,28 +235,24 @@ php artisan horizon:terminate   # Supervisor lo vuelve a levantar automáticamen
 php artisan queue:restart
 ```
 
-### 7. Configurar Nginx (ejemplo básico)
+### 7. Configurar Nginx como reverse proxy (ejemplo básico)
 
 ```nginx
 server {
     listen 80;
     server_name tu-dominio.com;
-    root /ruta/al/proyecto/public;
-    index index.php;
 
     location / {
-        try_files $uri $uri/ /index.php?$query_string;
-    }
-
-    location ~ \.php$ {
-        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
-        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
-        include fastcgi_params;
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
 ```
 
-> En producción **nunca** usar `php artisan serve`. Nginx + PHP-FPM es obligatorio.
+> En producción **nunca** usar `php artisan serve`. La app corre en Docker con FrankenPHP y Nginx/Apache solo actúa como reverse proxy.
 
 ---
 
