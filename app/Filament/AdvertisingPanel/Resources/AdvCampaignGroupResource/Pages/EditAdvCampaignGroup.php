@@ -25,6 +25,12 @@ class EditAdvCampaignGroup extends EditRecord
 
         AdvCampaignGroupObserver::onTabletsSynced($group);
 
-        Cache::tags(['adv:sync'])->flush();
+        // Borrar el payload cacheado de cada tablet del grupo directamente.
+        // Cache::tags(['adv:sync'])->flush() no funciona porque los payloads se guardan
+        // sin tags en CampaignSyncController::index() → esas claves son invisibles para tags.
+        $group->loadMissing('tablets');
+        $group->tablets->each(function ($tablet) {
+            Cache::forget("adv:sync_payload:{$tablet->id}");
+        });
     }
 }

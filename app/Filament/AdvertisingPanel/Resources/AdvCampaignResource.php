@@ -164,12 +164,35 @@ class AdvCampaignResource extends Resource
                     ->searchable(),
 
                 Tables\Columns\BadgeColumn::make('status')
-                    ->label('Estado')
+                    ->label('Estado DB')
                     ->colors([
                         'success' => 'active',
                         'warning' => 'scheduled',
                         'danger'  => 'paused',
                         'gray'    => 'expired',
+                    ]),
+
+                // Estado real: combina status + fechas para detectar campañas expiradas
+                // cuyo status en DB no se ha actualizado todavía.
+                Tables\Columns\BadgeColumn::make('effective_status')
+                    ->label('Estado real')
+                    ->getStateUsing(function (AdvCampaign $record): string {
+                        if ($record->status !== 'active') {
+                            return $record->status;
+                        }
+                        if ($record->ends_at->isPast()) {
+                            return 'vencida';
+                        }
+                        if ($record->starts_at->isFuture()) {
+                            return 'pendiente';
+                        }
+                        return 'activa';
+                    })
+                    ->colors([
+                        'success' => 'activa',
+                        'warning' => 'pendiente',
+                        'danger'  => 'vencida',
+                        'gray'    => fn ($state) => in_array($state, ['paused', 'expired']),
                     ]),
 
                 Tables\Columns\TextColumn::make('starts_at')
@@ -180,7 +203,8 @@ class AdvCampaignResource extends Resource
                 Tables\Columns\TextColumn::make('ends_at')
                     ->label('Fin')
                     ->date('d/m/Y')
-                    ->sortable(),
+                    ->sortable()
+                    ->color(fn (AdvCampaign $record) => $record->ends_at->isPast() ? 'danger' : null),
 
                 Tables\Columns\IconColumn::make('has_qr')
                     ->label('QR')
@@ -189,6 +213,7 @@ class AdvCampaignResource extends Resource
                 Tables\Columns\TextColumn::make('media_count')
                     ->label('Archivos')
                     ->counts('media'),
+
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
@@ -213,8 +238,15 @@ class AdvCampaignResource extends Resource
                         $newStatus = $record->status === 'active' ? 'paused' : 'active';
                         $record->update(['status' => $newStatus]);
 
-                        // Invalida caché de sync para todas las tablets del grupo
-                        Cache::tags(['adv:sync'])->flush();
+                        // Invalidar payload cache por tablet (no por tags — los payloads
+                        // no se guardan con tags y Cache::tags()->flush() no los borra).
+                        $record->load('groups.tablets');
+                        $record->groups->each(function ($group) {
+                            $group->tablets->each(function ($tablet) {
+                                Cache::forget("adv:sync_payload:{$tablet->id}");
+                                Cache::put("adv:sync_required:{$tablet->id}", true, now()->addHours(48));
+                            });
+                        });
                     }),
 
                 Tables\Actions\Action::make('view_qr')

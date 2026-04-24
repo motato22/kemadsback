@@ -1,10 +1,10 @@
 {
     "version": "2",
-    "sha256_hex": "4754c450e8db524792fec567f4318db1d2a37a065b1480d4ca985876c265d75a",
-    "url": "http:\/\/localhost:8000\/api\/adv\/apk\/guardian",
-    "updated_at": "2026-03-31 00:22:01",
-    "wifi_ssid": "MyCuteCase",
-    "wifi_password": "Fundamarco",
-    "wifi_security": "WPA",
-    "cert_checksum_b64": "NZxuParBhPIa8Hro8FgwdGMD9fl4FKCrxkvuNa0sd2A"
+    "sha256_hex": "3f44d16cc596a1012e15cf4ab6eb80245f668e419c17e54313d648212364e6a7",
+    "url": "https:\/\/morris-cliquy-umbilically.ngrok-free.dev\/api\/adv\/apk\/guardian",
+    "updated_at": "2026-04-23 23:43:25",
+    "cert_checksum_b64": "NZxuParBhPIa8Hro8FgwdGMD9fl4FKCrxkvuNa0sd2A",
+    "wifi_ssid": "",
+    "wifi_password": "",
+    "wifi_security": "WPA"
 }

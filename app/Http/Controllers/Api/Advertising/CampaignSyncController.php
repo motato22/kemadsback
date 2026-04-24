@@ -24,13 +24,21 @@ class CampaignSyncController extends Controller
         /** @var AdvTablet $tablet */
         $tablet = $request->user();
 
-        $cacheKey = "adv:sync_payload:{$tablet->id}";
-        $ttl      = now()->addMinutes(5);
+        $cacheKey    = "adv:sync_payload:{$tablet->id}";
+        $syncFlagKey = "adv:sync_required:{$tablet->id}";
+        $ttl         = now()->addMinutes(5);
+
+        // Si hay un sync pendiente, invalidar el payload cacheado ANTES de reconstruirlo.
+        // Sin esto, el cache vacío (de arranques sin campañas) persiste y el flag se borra
+        // sin que el dispositivo reciba datos reales.
+        if (Cache::get($syncFlagKey, false)) {
+            Cache::forget($cacheKey);
+        }
 
         $payload = Cache::remember($cacheKey, $ttl, fn () => $this->buildSyncPayload($tablet));
 
-        // Limpia el flag de sync_required ahora que la tablet solicitó sincronización
-        Cache::forget("adv:sync_required:{$tablet->id}");
+        // Limpia el flag de sync_required ahora que la tablet recibió datos frescos
+        Cache::forget($syncFlagKey);
 
         return response()->json($payload);
     }
@@ -55,7 +63,7 @@ class CampaignSyncController extends Controller
 
                 // Variables del QR
                 'has_qr'     => $campaign->has_qr,
-                'qr_url'     => $campaign->has_qr ? route('adv.campaigns.qr', $campaign->id) : null,
+                'qr_url'     => $campaign->has_qr ? route('adv.adv.campaigns.qr', $campaign->id) : null,
 
                 'media'      => $campaign->media->map(fn ($media) => [
                     'id'            => $media->id,

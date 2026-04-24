@@ -25,9 +25,12 @@ class HeartbeatController extends Controller
 
         // Actualización inmediata de last_seen_at y datos vitales en la misma request
         $tablet->update([
-            'last_seen_at'  => now(),
-            'battery_level' => $request->battery_level,
-            'app_version'   => $request->app_version,
+            'last_seen_at'     => now(),
+            'battery_level'    => $request->battery_level,
+            'app_version'      => $request->app_version,
+            'guardian_active'  => $request->guardian_active ?? true,
+            'player_installed' => $request->player_installed ?? true,
+            'player_version'   => $request->player_version,
         ]);
 
         // El log completo y las alertas se procesan en background para no bloquear la respuesta

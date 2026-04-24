@@ -36,7 +36,7 @@
     <img
         src="<?php echo e($qrUrl); ?>"
         alt="QR <?php echo e($unitId); ?>"
-        class="w-56 h-56 rounded-xl border border-gray-200 dark:border-gray-700 shrink-0"
+        class="w-full max-w-sm aspect-square rounded-xl border border-gray-200 dark:border-gray-700 shrink-0"
     />
 
     

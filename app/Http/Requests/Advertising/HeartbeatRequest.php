@@ -14,12 +14,15 @@ class HeartbeatRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'device_id'       => ['required', 'string', 'max:64'],
-            'app_version'     => ['required', 'string', 'max:16'],
-            'battery_level'   => ['nullable', 'integer', 'min:0', 'max:100'],
-            'driver_shift_id' => ['nullable', 'integer', 'exists:adv_driver_shifts,id'],
-            'lat'             => ['nullable', 'numeric', 'between:-90,90'],
-            'lng'             => ['nullable', 'numeric', 'between:-180,180'],
+            'device_id'        => ['required', 'string', 'max:64'],
+            'app_version'      => ['required', 'string', 'max:16'],
+            'battery_level'    => ['nullable', 'integer', 'min:0', 'max:100'],
+            'driver_shift_id'  => ['nullable', 'integer', 'exists:adv_driver_shifts,id'],
+            'lat'              => ['nullable', 'numeric', 'between:-90,90'],
+            'lng'              => ['nullable', 'numeric', 'between:-180,180'],
+            'guardian_active'  => ['nullable', 'boolean'],
+            'player_installed' => ['nullable', 'boolean'],
+            'player_version'   => ['nullable', 'string', 'max:32'],
         ];
     }
 

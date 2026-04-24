@@ -93,6 +93,19 @@ class AdvTabletResource extends Resource
                 Tables\Columns\TextColumn::make('app_version')
                     ->label('Versión App'),
 
+                Tables\Columns\TextColumn::make('battery_level')
+                    ->label('Batería')
+                    ->getStateUsing(fn (AdvTablet $record) =>
+                        $record->battery_level !== null ? $record->battery_level . '%' : '—'
+                    )
+                    ->color(fn (AdvTablet $record) => match(true) {
+                        $record->battery_level === null      => null,
+                        $record->battery_level <= 15        => 'danger',
+                        $record->battery_level <= 30        => 'warning',
+                        default                             => 'success',
+                    })
+                    ->sortable(),
+
                 Tables\Columns\TextColumn::make('storage_used')
                     ->label('Storage')
                     ->getStateUsing(fn (AdvTablet $record) =>
@@ -166,8 +179,8 @@ class AdvTabletResource extends Resource
                         }
 
                         $payloadJson   = json_encode($androidPayload);
-                        $qrUrl         = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=' . urlencode($payloadJson);
-                        $qrDownloadUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=20&format=png&data=' . urlencode($payloadJson);
+                        $qrUrl         = 'https://api.qrserver.com/v1/create-qr-code/?size=500x500&margin=10&data=' . urlencode($payloadJson);
+                        $qrDownloadUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=800x800&margin=20&format=png&data=' . urlencode($payloadJson);
 
                         $missingApk = empty($guardianInfo);
 
@@ -183,7 +196,7 @@ class AdvTabletResource extends Resource
                             'certChecksum'      => $guardianInfo ? ($guardianInfo['cert_checksum_b64'] ?? null) : null,
                         ]);
                     })
-                    ->modalWidth('xl'),
+                    ->modalWidth('2xl'),
 
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
